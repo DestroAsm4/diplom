@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  front:
+    image: sermalenk/skypro-front:lesson-38
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_started
+
+  api:
+    image: ${DOCKERHUB_USER}/todoapp:latest
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+         condition: service_completed_successfully
+
+  migrations:
+    image: ${DOCKERHUB_USER}/todoapp:latest
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: python manage.py migrate
+
+  bot:
+    image: ${DOCKERHUB_USER}/todoapp:latest
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    volumes:
+      - ./todolist/:/app/bot/
+    command: python manage.py runbot
+
+  postgres:
+    image: postgres:15.1-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - todoapp_data:/var/lib/postgresql/data/
+
+volumes:
+  todoapp_data:
