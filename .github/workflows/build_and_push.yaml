@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           source: "deploy/*"
-          target: "todoapp"
+          target: "todolist_15"
           strip_components: 1
       - name: Run compose
         uses: appleboy/ssh-action@master
@@ -44,7 +44,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
-          stript: |
+          cd : |
             cd todoapp
             docker compose pull
             docker compose down

@@ -27,7 +27,7 @@ services:
     command: python manage.py migrate
 
   bot:
-    image: ${DOCKERHUB_USER}/todoapp:latest
+    build: .
     env_file: .env
     depends_on:
       postgres:
@@ -35,7 +35,7 @@ services:
       migrations:
         condition: service_completed_successfully
     volumes:
-      - ./todolist/:/app/bot/
+      - ./.env:/app/.env
     command: python manage.py runbot
 
   postgres:
