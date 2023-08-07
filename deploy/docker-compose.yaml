@@ -27,7 +27,7 @@ services:
     command: python manage.py migrate
 
   bot:
-    build: .
+    build: ${DOCKERHUB_USER}/todolist_15:latest
     env_file: .env
     depends_on:
       postgres:
