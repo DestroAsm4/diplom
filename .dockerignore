@@ -3,7 +3,5 @@
 !app
 !core
 !manage.py
-!poetry.lock
-!pyproject.toml
 !goals
 !bot
