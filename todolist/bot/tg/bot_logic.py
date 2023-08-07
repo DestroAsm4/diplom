@@ -35,7 +35,7 @@ def get_user_goals(tg_user: TgUser, msg: Message) -> str:
 
 
     if not goals.exists():
-        return "You don't have any goals."
+        tg_client.send_message(chat_id=msg.chat.id, text="You don't have any goals.")
 
     serializer = GoalSerializer(goals, many=True)
 
@@ -75,7 +75,7 @@ def get_user_goals(tg_user: TgUser, msg: Message) -> str:
     response = '\n'.join(message)
 
     tg_client.send_message(chat_id=msg.chat.id, text=response)
-    return response
+
 
 def show_categories(user_id: int, chat_id: int, users_data: dict[int, dict[str | int, ...]], msg: Message) -> dict:
 
