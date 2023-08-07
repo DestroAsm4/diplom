@@ -10,7 +10,7 @@ services:
         condition: service_started
 
   api:
-    image: ${DOCKERHUB_USER}/todoapp:latest
+    image: ${DOCKERHUB_USER}/todolist_15:latest
     env_file: .env
     depends_on:
       postgres:
@@ -19,7 +19,7 @@ services:
          condition: service_completed_successfully
 
   migrations:
-    image: ${DOCKERHUB_USER}/todoapp:latest
+    image: ${DOCKERHUB_USER}/todolist_15:latest
     env_file: .env
     depends_on:
       postgres:
