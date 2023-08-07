@@ -1,6 +1,6 @@
 FROM python:3.11.4-slim
 
-WORKDIR app/
+WORKDIR /opt/app
 COPY requirements.txt .
 RUN pip install --upgrade pip &&  pip install -r requirements.txt && pip install --upgrade django-filter
 COPY . .
