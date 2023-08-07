@@ -35,7 +35,7 @@ def get_user_goals(tg_user: TgUser, msg: Message) -> str:
 
 
     if not goals.exists():
-        tg_client.send_message(chat_id=msg.chat.id, text="You don't have any goals.")
+        return tg_client.send_message(chat_id=msg.chat.id, text="You don't have any goals.")
 
     serializer = GoalSerializer(goals, many=True)
 
