@@ -1,4 +1,4 @@
-name: ci
+name: Build and push
 
 on: push
 
@@ -13,7 +13,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Set up Docker Buildx
+      - name: Set up Docker Build
         uses: docker/setup-buildx-action@v2
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -21,7 +21,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USER }}/diploma_15:latest
+          tags: ${{ secrets.DOCKERHUB_USER }}/todolist_15:latest
 
   deploy:
     needs: build
@@ -44,16 +44,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            cd todolist_15
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose pull
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose down
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose up -d
-      - name: CleanUp
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            docker system prune -f -a
+          stript: |
+            cd todoapp
+            docker compose pull
+            docker compose down
+            docker compose up -d
