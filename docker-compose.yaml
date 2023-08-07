@@ -44,7 +44,9 @@ services:
         condition: service_completed_successfully
     volumes:
       - ./todolist/:/app/bot/
-    command: python manage.py runbot
+    command: |
+      cd ./todolist/
+      python manage.py runbot
 
   postgres:
     image: postgres:15.1-alpine

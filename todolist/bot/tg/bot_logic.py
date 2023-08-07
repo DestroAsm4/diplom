@@ -1,4 +1,5 @@
 from collections import namedtuple
+from typing import Any
 
 from django.db import IntegrityError
 
@@ -8,9 +9,10 @@ from goals.serializers import GoalCategorySerializer, GoalSerializer
 from bot.models import TgUser
 from bot.tg.client import TgClient
 from bot.tg.schemas import Message
-from todolist.settings import BOT_TOKEN
 
-tg_client = TgClient(BOT_TOKEN)
+from django.conf import settings
+
+tg_client = TgClient(settings.BOT_TOKEN)
 
 GoalData = namedtuple('GoalData', ['title', 'due_date', 'priority', 'status'])
 CategoryData = namedtuple('CategoryData', ['cat_id', 'title'])
@@ -75,7 +77,14 @@ def get_user_goals(tg_user: TgUser, msg: Message) -> str:
     tg_client.send_message(chat_id=msg.chat.id, text=response)
     return response
 
-def show_categories(user_id: int, chat_id: int, users_data: dict[int, dict[str | int, ...]]) -> str:
+def show_categories(user_id: int, chat_id: int, users_data: dict[int, dict[str | int, ...]], msg: Message) -> dict:
+
+    user_data = {
+            'categories': {},
+            'user_id': user_id,
+            'category_id': None,
+            'title': None
+        }
 
     categories = (
         GoalCategory.objects.select_related('user')
@@ -87,7 +96,7 @@ def show_categories(user_id: int, chat_id: int, users_data: dict[int, dict[str |
     )
 
     if not categories.exists():
-        return "You don't have any categories to create a goal. Please create a category first."
+        tg_client.send_message(chat_id=msg.chat.id, text="You don't have any categories to create a goal. Please create a category first.")
 
     serializer = GoalCategorySerializer(categories, many=True)
 
@@ -97,43 +106,61 @@ def show_categories(user_id: int, chat_id: int, users_data: dict[int, dict[str |
         data.append(category)
 
     # Save 'index' to choose a user and link the category id to its index
-    users_data[chat_id] = {index: item.cat_id for index, item in enumerate(data, start=1)}
-    users_data[chat_id]['next_handler'] = choose_category
+    user_data['categories'] = {index: item.cat_id for index, item in enumerate(data, start=1)}
 
     message = [f'{index}) {item.title}' for index, item in enumerate(data, start=1)]
 
     response = '\n'.join(message)
-    return 'Choose category for goal:\n' + response
+    tg_client.send_message(chat_id=msg.chat.id,
+                           text='Choose category for goal:\n' + response)
 
-def choose_category(**kwargs) -> str:
+
+    return user_data
+
+def choose_category(user_data, **kwargs) -> dict:
 
     chat_id: int = kwargs.get('chat_id')
     message: str = kwargs.get('message')
-    users_data: dict[int, dict[str | int, ...]] = kwargs.get('users_data')
+    user_data: dict = user_data
+
+
+    text: str = ''
+
+    # print(chat_id, type(message), users_data)
+
     if message.isdigit():
         value = int(message)
-        category_id = users_data.get(chat_id, {}).get(value)
+        category_id = user_data['categories'][value]
+
+
+
+        category_id = value
         if category_id is not None:
-            users_data[chat_id]['next_handler'] = create_goal
-            users_data[chat_id]['category_id'] = category_id
-            return f'You chose category {value}. Please, send the title for the goal.'
+
+            user_data['category_id'] = category_id
+            text = f'You chose category {value}. Please, send the title for the goal.'
         else:
-            return f'Invalid category index. Please choose a valid category.'
+            text = f'Invalid category index. Please choose a valid category.'
     else:
-        return f'You sent not valid category index.'
+        text = f'You sent not valid category index.'
+    tg_client.send_message(chat_id=chat_id, text=text)
+    return user_data
 
 def create_goal(**kwargs) -> str:
 
     user_id: int = kwargs.get('user_id')
     chat_id: int = kwargs.get('chat_id')
     message: str = kwargs.get('message')
-    users_data: dict[int, dict[str | int, ...]] = kwargs.get('users_data')
+    category_id = kwargs.get('category_id')
+    text_response = ''
     try:
-        category_id = users_data.get(chat_id, {}).get('category_id')
         Goal.objects.create(title=message, user_id=user_id, category_id=category_id)
-        users_data.pop(chat_id, None)  # Clean user cache
-        return f'Goal "{message}" added!'
+          # Clean user cache
+        text_response = f'Goal "{message}" added!'
+        tg_client.send_message(chat_id=chat_id, text=text_response)
     except IntegrityError:
-        return 'Something went wrong. Goal not created.'
+        text_response = 'Something went wrong. Goal not created.'
+        tg_client.send_message(chat_id=chat_id, text=text_response)
     except Exception as e:
-        return f'Error: {str(e)}'
+        text_response = f'Error: {str(e)}'
+        tg_client.send_message(chat_id=chat_id, text=text_response)

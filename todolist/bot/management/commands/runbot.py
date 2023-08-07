@@ -4,7 +4,13 @@ from bot.models import TgUser
 from bot.tg.bot_logic import get_user_goals, show_categories
 from bot.tg.client import TgClient
 from bot.tg.schemas import Message
-from todolist.settings import BOT_TOKEN
+
+
+from bot.tg.bot_logic import choose_category
+
+from django.conf import settings
+
+from bot.tg.bot_logic import create_goal
 
 
 class Command(BaseCommand):
@@ -13,16 +19,18 @@ class Command(BaseCommand):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.tg_client = TgClient(BOT_TOKEN)
+        self.tg_client = TgClient(settings.BOT_TOKEN)
         self.user_data = {}
+        self.item = None
+        self.offset = 0
 
     def handle(self, *args, **options):
-        offset = 0
         self.stdout.write(self.style.SUCCESS('Bot started...'))
         while True:
-            res = self.tg_client.get_updates(offset=offset, allow_updates='message')
+            res = self.tg_client.get_updates(offset=self.offset, allow_updates='message')
             for item in res.result:
-                offset = item.update_id + 1
+                self.offset = item.update_id + 1
+                self.item = item
                 self.handle_message(item.message)
                 print(item.message)
 
@@ -41,7 +49,43 @@ class Command(BaseCommand):
                     get_user_goals(tg_user, msg)
                     # self.tg_client.send_message(chat_id=msg.chat.id, res)
                 case '/create':
-                    text = show_categories(user_id=tg_user.user.id, chat_id=msg.chat.id, users_data=self.user_data)
+                    # user_data = show_categories(user_id=tg_user.user.id, chat_id=msg.chat.id, users_data=self.user_data, msg=msg)
+                    # print(user_data)
+                    user_data = show_categories(user_id=tg_user.user.id, chat_id=msg.chat.id, users_data=self.user_data,
+                                                msg=msg)
+                    while True:
+                        res = self.tg_client.get_updates(offset=self.offset)
+                        for item in res.result:
+                            self.offset = item.update_id + 1
+
+                            user_data = choose_category(chat_id=msg.chat.id, message=item.message.text, user_data=user_data)
+
+                        while True:
+                            res = self.tg_client.get_updates(offset=self.offset)
+                            for item in res.result:
+                                self.offset = item.update_id + 1
+
+                                create_goal(user_id=user_data['user_id'], chat_id=msg.chat.id, message=item.message.text, category_id=user_data['category_id'])
+                            break
+                                # self.tg_client.send_message(chat_id=msg.chat.id, text=item.message.text)
+                        break
+
+
+
+
+
+
+                    # while True:
+                    #     res = self.tg_client.get_updates(offset=offset, allow_updates='message')
+                    #     for item in res.result:
+                    # self.offset = self.item.update_id + 1
+                    # text = choose_category(chat_id=self.offset, message=msg.text, user_data=user_data)
+                    # print(text)
+                    # self.tg_client.send_message(chat_id=msg.chat.id, text=text)
+
+
+
+
                 case '/cancel':
                     if self.user_data[msg.chat.id]:
                         del self.user_data[msg.chat.id]
