@@ -2,4 +2,6 @@
 
 !app
 !core
-
+!manage.py
+!goals
+!bot
