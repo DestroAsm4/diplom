@@ -92,10 +92,11 @@ DATABASES = {
         'NAME': env('POSTGRES_DB'),
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST', default='127.0.0.1'),
+        'HOST': 'postgres',
         'PORT': '5432',
     }
 }
+# 'HOST': env('POSTGRES_HOST', default='127.0.0.1'),
 #DATABASE_URL = env('DATABASE_URL')
 
 

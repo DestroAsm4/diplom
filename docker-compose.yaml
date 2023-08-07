@@ -13,7 +13,7 @@ services:
     build: .
     env_file: .env
     environment:
-      POSTGRES_HOST: postgres
+      DB_HOST: postgres
       DEBUG: True
     depends_on:
       postgres:
@@ -43,10 +43,8 @@ services:
       migrations:
         condition: service_completed_successfully
     volumes:
-      - ./todolist/:/app/bot/
-    command: |
-      cd ./todolist/
-      python manage.py runbot
+      - ./.env:/app/.env
+    command: python manage.py runbot
 
   postgres:
     image: postgres:15.1-alpine
