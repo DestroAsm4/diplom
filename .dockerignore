@@ -1,7 +1,4 @@
 **
 
-!app
-!core
-!manage.py
-!goals
-!bot
+!todolist
+!requirements.txt
