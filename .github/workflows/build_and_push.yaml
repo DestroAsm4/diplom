@@ -45,7 +45,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           cd : |
-            cd todoapp
+            cd todolist_15
             docker compose pull
             docker compose down
             docker compose up -d
