@@ -75,21 +75,12 @@ class Command(BaseCommand):
 
 
 
-                    # while True:
-                    #     res = self.tg_client.get_updates(offset=offset, allow_updates='message')
-                    #     for item in res.result:
-                    # self.offset = self.item.update_id + 1
-                    # text = choose_category(chat_id=self.offset, message=msg.text, user_data=user_data)
-                    # print(text)
-                    # self.tg_client.send_message(chat_id=msg.chat.id, text=text)
 
 
 
 
-                case '/cancel':
-                    if self.user_data[msg.chat.id]:
-                        del self.user_data[msg.chat.id]
-                    text = 'Creation cancelled'
+
+
         else:
-            text = 'List of commands:\n/goals - Show your goals\n/create - Create a goal\n/cancel - Cancel creation'
+            text = 'List of commands:\n/goals - Show your goals\n/create - Create a goal'
             self.tg_client.send_message(chat_id=msg.chat.id, text=text)
