@@ -10,6 +10,9 @@ from goals.serializers import GoalCategoryCreateSerializer, GoalCategorySerializ
 from goals.filters import GoalDateFilter, GoalCategoryFilter
 from goals.permissions import BoardPermission
 
+
+
+#-------------------categories------------
 class GoalCategoryCreateView(CreateAPIView):
     model = GoalCategory
     permission_classes = [IsAuthenticated]
@@ -36,6 +39,9 @@ class GoalCategoryListView(ListAPIView):
 
 
 class GoalCategoryView(RetrieveUpdateDestroyAPIView):
+    '''
+            view for updating and deleting
+    '''
     serializer_class = GoalCategorySerializer
     permission_classes = [IsAuthenticated]
 
@@ -48,6 +54,7 @@ class GoalCategoryView(RetrieveUpdateDestroyAPIView):
         instance.save()
         return instance
 
+#---------------------Goal-----------------
 
 class GoalCreateView(CreateAPIView):
     model = Goal
@@ -86,7 +93,7 @@ class GoalView(RetrieveUpdateDestroyAPIView):
         instance.status = Status.archived
         instance.save()
 
-
+#---------------------Comments-----------------
 class GoalCommentCreateView(CreateAPIView):
     model = GoalComment
     serializer_class = GoalCommentCreateSerializer
@@ -111,6 +118,9 @@ class GoalCommentListView(ListAPIView):
 
 
 class GoalCommentView(RetrieveUpdateDestroyAPIView):
+    '''
+        view for updating and deleting
+    '''
     serializer_class = GoalCommentSerializer
     permission_classes = [IsAuthenticated]
     queryset = GoalComment.objects.select_related('user')
@@ -120,7 +130,7 @@ class GoalCommentView(RetrieveUpdateDestroyAPIView):
             goal__category__board__participants__user=self.request.user
         )
 
-
+#---------------------Boards-----------------
 class BoardCreateView(CreateAPIView):
     model = Board
     serializer_class = BoardCreateSerializer
@@ -128,6 +138,9 @@ class BoardCreateView(CreateAPIView):
 
 
 class BoardView(RetrieveUpdateDestroyAPIView):
+    '''
+            view for updating and deleting
+    '''
     model = Board
     permission_classes = [IsAuthenticated, BoardPermission]
     serializer_class = BoardSerializer

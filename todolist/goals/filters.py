@@ -6,6 +6,9 @@ from goals.models import Goal, GoalCategory
 
 
 class GoalDateFilter(rest_framework.FilterSet):
+    '''
+        field and allowed searches on them
+    '''
     class Meta:
         model = Goal
         fields = {

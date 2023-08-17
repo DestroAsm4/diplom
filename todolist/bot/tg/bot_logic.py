@@ -20,6 +20,8 @@ CategoryData = namedtuple('CategoryData', ['cat_id', 'title'])
 
 def get_user_goals(tg_user: TgUser, msg: Message) -> str:
 
+
+
     user_id = tg_user.user.id
 
     priority = dict(Priority.choices)
@@ -31,8 +33,6 @@ def get_user_goals(tg_user: TgUser, msg: Message) -> str:
         .exclude(status=Status.archived)
         .all()
     )
-
-
 
     if not goals.exists():
         return tg_client.send_message(chat_id=msg.chat.id, text="You don't have any goals.")
@@ -49,20 +49,6 @@ def get_user_goals(tg_user: TgUser, msg: Message) -> str:
         )
         data.append(filtered_dict)
 
-    # data = []
-    # for item in serializer.data:
-    #     goal = item['title']
-    #     print(goal)
-    #     # due_date=item['due_date'][:10] if item['due_date'] else '',
-    #     # priority=priority[item['priority']],
-    #     # status=status[item['status']],
-    #     # )
-    #     data.append(goal)
-    #     tg_client.send_message(chat_id=msg.chat.id, text=goal)
-
-
-
-
     message = []
     for index, item in enumerate(data, start=1):
         goal = (
@@ -77,7 +63,9 @@ def get_user_goals(tg_user: TgUser, msg: Message) -> str:
     tg_client.send_message(chat_id=msg.chat.id, text=response)
 
 
-def show_categories(user_id: int, chat_id: int, users_data: dict[int, dict[str | int, ...]], msg: Message) -> dict:
+def show_categories(user_id: int, msg: Message) -> dict:
+
+    'outputs a list of categories, and creates a dictionary of data to pass to the following functions in the target creation loop'
 
     user_data = {
             'categories': {},
@@ -105,7 +93,6 @@ def show_categories(user_id: int, chat_id: int, users_data: dict[int, dict[str |
         category = CategoryData(cat_id=item['id'], title=item['title'])
         data.append(category)
 
-    # Save 'index' to choose a user and link the category id to its index
     user_data['categories'] = {index: item.cat_id for index, item in enumerate(data, start=1)}
 
     message = [f'{index}) {item.title}' for index, item in enumerate(data, start=1)]
@@ -124,17 +111,10 @@ def choose_category(user_data, **kwargs) -> dict:
     user_data: dict = user_data
 
 
-    text: str = ''
-
-    # print(chat_id, type(message), users_data)
-
     if message.isdigit():
         value = int(message)
         category_id = user_data['categories'][value]
 
-
-
-        category_id = value
         if category_id is not None:
 
             user_data['category_id'] = category_id
@@ -152,15 +132,16 @@ def create_goal(**kwargs) -> str:
     chat_id: int = kwargs.get('chat_id')
     message: str = kwargs.get('message')
     category_id = kwargs.get('category_id')
-    text_response = ''
+
     try:
         Goal.objects.create(title=message, user_id=user_id, category_id=category_id)
-          # Clean user cache
         text_response = f'Goal "{message}" added!'
         tg_client.send_message(chat_id=chat_id, text=text_response)
+
     except IntegrityError:
         text_response = 'Something went wrong. Goal not created.'
         tg_client.send_message(chat_id=chat_id, text=text_response)
+
     except Exception as e:
         text_response = f'Error: {str(e)}'
         tg_client.send_message(chat_id=chat_id, text=text_response)

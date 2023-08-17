@@ -15,14 +15,25 @@ class TgClientError(Exception):
 
 class TgClient:
 
+    '''
+        class for interacting with telegram
+    '''
+
     def __init__(self, token: str | None = None):
         self.__token = token if token else settings.BOT_TOKEN
         self.__url = f'https://api.telegram.org/bot{self.__token}/'
 
     def __get_url(self, method: str) -> str:
+        '''
+            interaction occurs through the formation of url
+        '''
         return f'{self.__url}{method}'
 
     def get_updates(self, offset: int = 0, timeout: int = 60, **kwargs) -> GetUpdatesResponse:
+        '''
+            getting data going through, getting the latest updates
+        '''
+
         data = self._get('getUpdates', offset=offset, timeout=timeout, **kwargs)
         return self._serialize_tg_response(GetUpdatesResponse, data)
 
@@ -32,6 +43,9 @@ class TgClient:
         return self._serialize_tg_response(SendMessageResponse, data)
 
     def _get(self, method: str, **params) -> dict:
+        '''
+            query execution
+        '''
         url = self.__get_url(method)
         params.setdefault('timeout', 10)
         response = requests.get(url, params=params)

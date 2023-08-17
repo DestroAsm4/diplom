@@ -7,6 +7,10 @@ from core.models import User
 from core.serializers import UserSerializer
 
 
+
+#------------categories---------------
+
+
 class GoalCategoryCreateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -32,6 +36,7 @@ class GoalCategorySerializer(GoalCategoryCreateSerializer):
 
         return board
 
+#---------------Goal----------------------------
 
 class GoalCreateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -67,7 +72,7 @@ class GoalSerializer(GoalCreateSerializer):
 
         return category
 
-
+#---------------------comments---------------------
 class GoalCommentCreateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -109,6 +114,7 @@ class BoardCreateSerializer(serializers.ModelSerializer):
         )
         return board
 
+#---------------------------Board----------------------
 
 class BoardParticipantSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(

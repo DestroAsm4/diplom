@@ -6,6 +6,9 @@ from goals.models import BoardParticipant
 class BoardPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
+        '''
+            access to boards
+        '''
         if not request.user.is_authenticated:
             return False
         if request.method in permissions.SAFE_METHODS:
