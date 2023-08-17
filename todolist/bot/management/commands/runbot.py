@@ -51,8 +51,7 @@ class Command(BaseCommand):
                 case '/goals':
                     get_user_goals(tg_user, msg)
                 case '/create':
-                    user_data = show_categories(user_id=tg_user.user.id, chat_id=msg.chat.id, users_data=self.user_data,
-                                                msg=msg)
+                    user_data = show_categories(user_id=tg_user.user.id, msg=msg)
                     while True:
                         res = self.tg_client.get_updates(offset=self.offset)
                         for item in res.result:
