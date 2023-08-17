@@ -52,29 +52,20 @@ class Command(BaseCommand):
                     get_user_goals(tg_user, msg)
                 case '/create':
                     user_data = show_categories(user_id=tg_user.user.id, msg=msg)
-                    while True:
-                        res = self.tg_client.get_updates(offset=self.offset)
-                        for item in res.result:
-                            self.offset = item.update_id + 1
-                            user_data = choose_category(chat_id=msg.chat.id, message=item.message.text, user_data=user_data)
-
+                    if not user_data:
                         while True:
                             res = self.tg_client.get_updates(offset=self.offset)
                             for item in res.result:
                                 self.offset = item.update_id + 1
-                                create_goal(user_id=user_data['user_id'], chat_id=msg.chat.id, message=item.message.text, category_id=user_data['category_id'])
+                                user_data = choose_category(chat_id=msg.chat.id, message=item.message.text, user_data=user_data)
+
+                            while True:
+                                res = self.tg_client.get_updates(offset=self.offset)
+                                for item in res.result:
+                                    self.offset = item.update_id + 1
+                                    create_goal(user_id=user_data['user_id'], chat_id=msg.chat.id, message=item.message.text, category_id=user_data['category_id'])
+                                break
                             break
-                        break
-
-
-
-
-
-
-
-
-
-
 
 
         else:

@@ -63,7 +63,7 @@ def get_user_goals(tg_user: TgUser, msg: Message) -> str:
     tg_client.send_message(chat_id=msg.chat.id, text=response)
 
 
-def show_categories(user_id: int, msg: Message) -> dict:
+def show_categories(user_id: int, msg: Message) -> dict | None:
 
     'outputs a list of categories, and creates a dictionary of data to pass to the following functions in the target creation loop'
 
@@ -85,6 +85,7 @@ def show_categories(user_id: int, msg: Message) -> dict:
 
     if not categories.exists():
         tg_client.send_message(chat_id=msg.chat.id, text="You don't have any categories to create a goal. Please create a category first.")
+        return None
 
     serializer = GoalCategorySerializer(categories, many=True)
 
