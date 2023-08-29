@@ -1,73 +1,56 @@
-version: '3.8'
+version: "3.8"
 
 services:
-
-  db:
-    image: postgres:15.1
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    healthcheck:
-          test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
-          interval: 5s
-          timeout: 3s
-          retries: 10
-    volumes:
-      - django_app_pg_data:/var/lib/postgresql/data/
-
-  run_migrations:
-    image: ${DOCKERHUB_USER}/diploma_15:latest
-    env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-    command: python manage.py migrate
-
-
-  api:
-      image: ${DOCKERHUB_USER}/diploma_15:latest
-      env_file: .env
-      depends_on:
-        db:
-          condition: service_healthy
-        run_migrations:
-          condition: service_completed_successfully
-
-  bot:
-    image: ${DOCKERHUB_USER}/diploma_15:latest
-    env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-      run_migrations:
-        condition: service_completed_successfully
-    command: python manage.py run_bot
-
-
-  collect_static:
-      image: ${DOCKERHUB_USER}/diploma_15:latest
-      env_file: .env
-      command: python manage.py collectstatic -c --no-input
-      volumes:
-        - django_static:/opt/app/static/
-
-  frontend:
+  front:
     image: sermalenk/skypro-front:lesson-38
-    restart: on-failure
     ports:
       - "80:80"
     depends_on:
       api:
         condition: service_started
-      collect_static:
+
+  api:
+    image: ${DOCKERHUB_USER}/todolist_15:latest
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+         condition: service_completed_successfully
+
+  migrations:
+    image: ${DOCKERHUB_USER}/todolist_15:latest
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: python manage.py migrate
+
+  bot:
+    image: ${DOCKERHUB_USER}/todolist_15:latest
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
         condition: service_completed_successfully
-
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - django_static:/usr/share/nginx/html/static/
+      - ./.env:/app/.env
+    command: python manage.py runbot
 
+  postgres:
+    image: postgres:15.1-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - todoapp_data:/var/lib/postgresql/data/
 
 volumes:
-  django_app_pg_data:
-  django_static:
+  todoapp_data:
