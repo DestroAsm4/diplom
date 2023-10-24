@@ -24,3 +24,5 @@ urlpatterns = [
     path("oauth/", include("social_django.urls", namespace="social")),
     path('bot/', include('bot.urls')),
 ]
+
+#12
